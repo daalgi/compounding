@@ -140,6 +140,8 @@ const evalScenario = scenario => {
 
 const runCalculations = (constant, random) => {
     const constantSimulation = evalScenario({ ...constant })
+    // constantSimulation.lastYear = constantSimulation.yearsToRetire + constantSimulation.yearsInRetirement
+    
     const randomSimulation = evalScenario({ ...random })
     let lastYearCapital = []
     for (let i = 0; i < 1000; i++) {

@@ -1,7 +1,8 @@
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 
-import Slider, { createSliderWithTooltip } from 'rc-slider'
-import "rc-slider/assets/index.css";
+// import Slider, { createSliderWithTooltip } from 'rc-slider'
+// import "rc-slider/assets/index.css";
+import Slider from '@material-ui/core/Slider'
 
 import { Subtitle } from './Common'
 import { runCalculations } from '../utils'
@@ -12,146 +13,213 @@ const defaultValues = {
     monthlyDeposits: 1000,
     yearsToRetire: 20,
     monthlyWithdrawals: 2000,
-    lastYear: 60,
+    yearsInRetirement: 40,
     roiMean: 7,
     roiStsdv: 19
 }
 
-const SliderWithTooltip = createSliderWithTooltip(Slider)
+// const SliderWithTooltip = createSliderWithTooltip(Slider)
 
+// const CustomSlider = ({
+//     label, name, value, defaultValue = 0, min = 0, max = 100, step = 1,
+//     marks = null, onChange = null
+// }) =>
+//     <div className="input-item">
+//         <p className="input-label">{label}</p>
+//         <SliderWithTooltip
+//             id={name}
+//             min={min}
+//             max={max}
+//             step={step}
+//             name={name}
+//             // defaultValue={defaultValue}
+//             value={value}
+//             onChange={v => onChange(name, v)}
+//             marks={marks}
+//             onTouchStart={e => { e.preventDefault() }}
+//             onTouchMove={e => { e.preventDefault() }}
+//         />
+//     </div>
 const CustomSlider = ({
-    label, name, defaultValue = 0, min = 0, max = 100, step = 1,
-    marks = null
+    label, name, value, defaultValue = 0, min = 0, max = 100, step = 1,
+    marks = null, factor = 1, suffix = "", onChange = null
 }) =>
     <div className="input-item">
-        <p className="input-label">{label}</p>
-        <SliderWithTooltip
+        {/* <p className="input-label">{label}: {value * factor}{suffix}</p> */}
+        <p className="input-label">{label(value)}</p>
+        <Slider
             id={name}
             min={min}
             max={max}
             step={step}
-            name={name}
+            // value={value}
             defaultValue={defaultValue}
-            marks={marks}
+            // onChange={(e, value) => onChange(e.target.parentNode.id, value)}
+            onChangeCommitted={(e, value) => 
+                onChange(e.target.parentNode.id, value)}
+            // marks={Object.keys(marks).map(k => ({ value: k, label: marks[k] }))}
+            marks={marks?.map(v => 
+                ({ "label": `${v*factor}${suffix}`, "value": v })) }
+            valueLabelDisplay="auto"
+            color="primary"
+            aria-labelledby="discrete-slider-restrict"
         />
     </div>
 
 const marks = {
-    yearsToRetire: { 0: '0', 5: '5', 10: '10', 20: '20', 30: '30', 40: '40', 50: '50' },
-    initialInvestment: { 0: '0', 100: '100k', 100: '100k', 500: '500k' },
-    monthlyCash: { 0: '0', 500: '500', 1000: '1000', 2000: '2000', 3000: '3000' },
-    lastYear: { 10: '10', 30: '30', 50: '50', 70: '70' },
-    mean: { 0: '0', 7: '7', 20: '20', 50: '50' },
-    std: { 0: '0', 19: '19', 50: '50' }
+    yearsToRetier: [0, 10, 20, 30, 40, 50],
+    initialInvestment: [0, 100, 200e3, 500e3],
+    monthlyCash: [0, 500, 1000, 2000, 3000],
+    lastYear: [20, 40, 60, 80],
+    mean: [0, 7, 20, 50],
+    std: [0, 19, 50]
 }
 
+const sliders = [
+    {
+        label: value => `Years to retire: ${value}`,
+        name: "yearsToRetire",
+        min: 0, max: 50, step: 1,
+        marks: [0, 10, 20, 30, 40, 50]
+    }, {
+        label: value => `Initial investment: ${value/1000}k`,
+        name: "initialInvestment",
+        min: 0, max: 500e3, step: 1000,
+        marks: [0, 100e3, 200e3, 300e3, 400e3, 500e3],
+        factor: 0.001,
+        suffix: "k"
+    }, {
+        label: value => `Monthly deposits: ${value}`,
+        name: "monthlyDeposits",
+        min: 0, max: 3000, step: 100,
+        marks: [0, 500, 1000, 2000, 3000]
+    }, {
+        label: value => `Monthly withdrawals: ${value}`,
+        name: "monthlyWithdrawals",
+        min: 0, max: 3000, step: 100,
+        marks: [0, 500, 1000, 2000, 3000]
+    }, {
+        label: value => `Years in retirement: ${value}`,
+        name: "yearsInRetirement",
+        min: 20, max: 60, step: 5,
+        marks: [20, 30, 40, 50, 60]
+    },
+]
+
 const Form = ({ setState }) => {
+    const [input, setInput] = useState(defaultValues)
 
     useEffect(() => {
         // Use the form initial values to do the first calculation
-        let random = {}
-        for (const key in defaultValues) {
-            random[key] = parseFloat(defaultValues[key])
-        }
-        random.roiMean /= 100
-        random.roiStsdv /= 100
-        let constant = { ...random, roiStsdv: 0 }
-        handleCalculations(constant, random)
+        handleCalculations()
     }, [])
 
-    const handleChange = e => {
-        const elements = e.currentTarget.elements
-        let random = {}
-        for (const element of elements) {
-            random[element.name] = parseFloat(element.value)
-        }
-        random.roiMean /= 100
-        random.roiStsdv /= 100
-        let constant = { ...random, roiStsdv: 0 }
-        handleCalculations(constant, random)
+    const handleChange = (name, value) => {
+        // let name = e.target.parentNode.id
+        console.log(name, value)
+        setInput({ ...input, [name]: value })
     }
 
     const handleSubmit = e => {
         //console.log(e.target)
         e.preventDefault()
-        handleChange(e)
+        handleCalculations()
     }
 
-    const handleCalculations = (constant, random) => {
-        let res = runCalculations(constant, random)
+    const handleCalculations = () => {
+        let random = { ...input, roiMean: input.roiMean / 100, roiStsdv: input.roiStsdv / 100 }
+        let res = runCalculations(random, { ...random, roiStsdv: 0})
         //console.log(res)
         setState(res)
     }
 
-    console.log('render form')
+    // console.log('render form')
+    // console.log(state.yearsToRetire)
+    // console.log(input)
     return (
-        <form onFocus={handleChange} onSubmit={handleSubmit}
+        <form onSubmit={handleSubmit}
             className="input-form">
             <Subtitle>Scenario parameters</Subtitle>
-            <CustomSlider
+            {sliders.map(({label, name, min, max, step, marks, factor, suffix}, i) => 
+                <CustomSlider
+                    key={i}
+                    label={label}
+                    name={name}
+                    value={input[name]}
+                    defaultValue={defaultValues[name]}
+                    onChange={handleChange}
+                    min={min} max={max} step={step}
+                    marks={marks}
+                    factor={factor}
+                    suffix={suffix}
+                />
+            )}
+            {/* <CustomSlider
                 label="Years to retire"
                 name="yearsToRetire"
+                value={input.yearsToRetire}
                 defaultValue={defaultValues.yearsToRetire}
-                min={0}
-                max={50}
-                step={1}                
+                onChange={handleChange}
+                min={0} max={50} step={1}
                 marks={marks.yearsToRetire}
             />
             <CustomSlider
                 label="Initial investment"
                 name="initialInvestment"
+                value={input.initialInvestment}
                 defaultValue={defaultValues.initialInvestment}
-                min={0}
-                max={500}
-                step={1}                
+                onChange={handleChange}
+                min={0} max={500} step={1}                
                 marks={marks.initialInvestment}
+                factor={0.001}
+                suffix="k"
             />
             <CustomSlider
                 label="Monthly deposit"
                 name="monthlyDeposits"
+                value={input.monthlyDeposits}
                 defaultValue={defaultValues.monthlyDeposits}
-                min={0}
-                max={3000}
-                step={100}                
+                onChange={handleChange}
+                min={0} max={3000} step={100}                
                 marks={marks.monthlyCash}
             />
             <CustomSlider
                 label="Monthly withdrawals"
                 name="monthlyWithdrawals"
+                value={input.monthlyWithdrawals}
                 defaultValue={defaultValues.monthlyWithdrawals}
-                min={0}
-                max={3000}
-                step={100}                
+                onChange={handleChange}
+                min={0} max={3000} step={100}                
                 marks={marks.monthlyCash}
             />
             <CustomSlider
                 label="Last year from now"
                 name="lastYear"
+                value={input.lastYear}
                 defaultValue={defaultValues.lastYear}
-                min={10}
-                max={70}
-                step={1}                
+                onChange={handleChange}
+                min={10} max={70} step={1}                
                 marks={marks.lastYear}
             />
             <Subtitle>Expected annual returns (normal distribution)</Subtitle>
             <CustomSlider
                 label="Mean"
                 name="roiMean"
+                value={input.roiMean}
                 defaultValue={defaultValues.roiMean}
-                min={0}
-                max={50}
-                step={1}                
+                onChange={handleChange}
+                min={0} max={50} step={1}                
                 marks={marks.mean}
             />
             <CustomSlider
                 label="Standard deviation"
                 name="roiStsdv"
+                value={input.roiStsdv}
                 defaultValue={defaultValues.roiStsdv}
-                min={0}
-                max={50}
-                step={1}                
-                marks={marks.std}
-            />
+                onChange={handleChange}
+                min={0} max={50} step={1}                
+                marks={marks.std} 
+            /> */}
             <br />
             <button type="submit" name="btn">
                 Run experiment

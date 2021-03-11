@@ -30,7 +30,7 @@ const defaultState = {
 function App() {
   const [state, setState] = useState(defaultState)
 
-  console.log('render index')
+//   console.log('render index')
   return (
       <div className="">
 

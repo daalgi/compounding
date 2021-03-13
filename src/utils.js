@@ -1,3 +1,66 @@
+const NUM_SIMULATIONS = 1000
+
+// FUNCTIONS TO SHOW NUMERIC RESULTS
+
+/**
+ * Returns a rounded number
+ * @param {float} value 
+ * @param {integer} decimals 
+ */
+const round = (value, decimals = 1) =>
+    Math.round(value * Math.pow(10, decimals)) / Math.pow(10, decimals)
+
+/**
+ * Returns a string with the number rounded
+ * @param {float} value 
+ * @param {integer} decimals 
+ */
+const roundToString = (value, decimals = 1) => {
+    // Round the number and make sure it's a float (with decimal point)
+    let rounded = parseFloat(round(value, decimals))
+    
+    if (decimals === 0)
+        return parseInt(rounded).toString()
+    
+    let roundedDecimals = rounded % 1 === 0 
+        ? 0 
+        : rounded.toString().split('.')[1].length
+    
+    if (roundedDecimals === 0) 
+        return rounded.toString() + '.' + Array(decimals-roundedDecimals).fill('0').join('')
+
+    if (roundedDecimals < decimals)
+        return rounded.toString() + Array(decimals-roundedDecimals).fill('0').join('')
+    
+    return rounded.toString()
+}
+
+/**
+ * Returns a string with the rounded amount of money using 
+ * a suffix (k or M) if the value is in the order of thousands or millions
+ * @param {float} value 
+ * @param {integer} decimals 
+ */
+const convertToMoney = (value, decimals = 1) => {
+    if (value < 1000)
+        return roundToString(value, decimals)
+    if (value < 1e6)
+        return roundToString(value / 1e3, decimals) + 'k'
+        return roundToString(value / 1e6, decimals) + 'M'
+}
+
+/**
+ * Returns a string with the amount of money using a suffix (k or M) 
+ * if needed the value is in the order of thousands or millions
+ * @param {float} value 
+ * @param {integer} decimals 
+ */
+const convertToPercetage = (value, decimals = 0) =>
+    roundToString(value, decimals) + '%'
+
+
+// FUNCTIONS TO HANDLE RANDOM NUMBERS
+
 /**
  * Marsaglia polar method to generate random gaussian numbers
  * @param {float} mean 
@@ -35,6 +98,8 @@ const normalDistribution = arr => {
 }
 
 
+// FUNCTIOS TO EVALUATE THE INVESTMENT EVOLUTION
+
 const evalMonth = ({
     accumInvested,
     monthlyInvestment,
@@ -71,7 +136,7 @@ const evalYear = ({
         : -monthlyWithdrawals
     roiMean /= 12
     roiStsdv /= Math.sqrt(12)
-    for (let i = 1; i <= 12; i++) {
+    for (let i = 0; i < 12; i++) {
         let month = evalMonth({ accumInvested, monthlyInvestment, roiMean, roiStsdv })
         accumInvested = month.accumInvested
         arr.push(month)
@@ -92,11 +157,11 @@ const evalScenario = scenario => {
         yearsToRetire, initialInvestment,
         monthlyDeposits, monthlyWithdrawals,
         roiMean, roiStsdv, lastYear } = scenario
-    if (!lastYear) lastYear = 50
     let year = 1
     let annualRes = []
     let accumInvested = initialInvestment
     let yearBankrupcy = null
+
     while (year <= lastYear) {
 
         let y = evalYear({
@@ -138,21 +203,25 @@ const evalScenario = scenario => {
     }
 }
 
-const runCalculations = (constant, random) => {
+const runAnalysis = (constant, random) => {
+    let lastYear = constant.yearsToRetire + constant.yearsInRetirement
+    constant.lastYear = lastYear
     const constantSimulation = evalScenario({ ...constant })
-    // constantSimulation.lastYear = constantSimulation.yearsToRetire + constantSimulation.yearsInRetirement
-    
+
+    random.lastYear = lastYear
     const randomSimulation = evalScenario({ ...random })
+
     let lastYearCapital = []
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < NUM_SIMULATIONS; i++) {
         lastYearCapital.push(evalScenario({ ...random }).capital.lastYear)
     }
+    let thisYear = new Date().getFullYear()
     let plotData = constantSimulation.annualRes.map((v, i) =>
-        ({
-            year: v.year + (new Date().getFullYear()),
-            constant: v.accumInvested / 1000,
-            random: randomSimulation.annualRes[i].accumInvested / 1000
-        })
+    ({
+        year: v.year + thisYear,
+        constant: v.accumInvested / NUM_SIMULATIONS,
+        random: randomSimulation.annualRes[i].accumInvested / NUM_SIMULATIONS
+    })
     )
 
     return {
@@ -162,7 +231,7 @@ const runCalculations = (constant, random) => {
             random: randomSimulation.retirementStart.accumInvested,
         },
         lastYear: {
-            year: new Date().getFullYear() + constant.lastYear,
+            year: thisYear + constant.lastYear,
             deposited: constantSimulation.capital.deposited,
             withdrawn: constantSimulation.capital.withdrawn,
             constant: constantSimulation.capital.lastYear,
@@ -171,47 +240,38 @@ const runCalculations = (constant, random) => {
         },
         yearBankrupcy: {
             constant: constantSimulation.yearBankrupcy && (
-                new Date().getFullYear() + constantSimulation.yearBankrupcy),
+                thisYear + constantSimulation.yearBankrupcy),
             random: randomSimulation.yearBankrupcy && (
-                new Date().getFullYear() + randomSimulation.yearBankrupcy),
+                thisYear + randomSimulation.yearBankrupcy),
         },
         probabilities: {
-            noBankrupcy: lastYearCapital.reduce((acc, y) => y > 0 ? acc + 1 : acc, 0) / lastYearCapital.length
+            noBankrupcy: lastYearCapital.reduce((acc, y) =>
+                y > 0
+                    ? acc + 1
+                    : acc, 0
+            ) / lastYearCapital.length,
+            lastYearGEdeposited: lastYearCapital.reduce((acc, y) =>
+                y >= constantSimulation.capital.deposited*20
+                    ? acc + 1
+                    : acc, 0
+            ) / lastYearCapital.length
         },
         plotData,
     }
 }
 
-const convertToK = (value, decimals = 1) =>
-    `${Math.round(value / Math.pow(10, 3 - decimals)) / Math.pow(10, decimals)} k`
 
-const convertToPercetage = (value, decimals = 0) =>
-    `${Math.round(value * Math.pow(10, 2+decimals)) / Math.pow(10, decimals)}%`
+export {
+    round,
+    roundToString,
+    convertToMoney,
+    convertToPercetage,
 
-let scenario = {
-    yearsToRetire: 10,
-    initialInvestment: 30e3,
-    monthlyDeposits: 1500,
-    monthlyWithdrawals: 1500,
-    roiMean: 0.07,
-    roiStsdv: 0.10
-}
-//res = evalYear({ year: 0, yearsToRetire: 10, initialInvestment: 30e3, strategy })
-/*res = evalScenario({ yearsToRetire: 10, initialInvestment: 30e3, strategy, lastYear: 50 })
-console.log(res)*/
-/*res = []
-for (let i = 0; i < 100000; i++) {
-    res.push(random(0.05, 0.08))
-}
-console.log(Math.max(...res))
-console.log(Math.min(...res))
-console.log(res.reduce((acc, val) => acc + val) / res.length)
-*/
+    random,
+    normalDistribution,
 
-export { 
-    normalDistribution, 
-    evalScenario, 
-    convertToK, 
-    convertToPercetage, 
-    runCalculations 
+    evalMonth,
+    evalYear,
+    evalScenario,
+    runAnalysis
 }

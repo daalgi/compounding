@@ -63,11 +63,11 @@ describe('convertToMoney', () => {
 })
 
 describe('convertToPercetage', () => {
-    it('convertToPercetage(100, 1) = "100.0%"', () => {
-        expect(convertToPercetage(100, 1)).toBe("100.0%")
+    it('convertToPercetage(1, 1) = "100.0%"', () => {
+        expect(convertToPercetage(1, 1)).toBe("100.0%")
     })
-    it('convertToPercetage(8.34, 1) = "8.3%"', () => {
-        expect(convertToPercetage(8.34, 1)).toBe("8.3%")
+    it('convertToPercetage(0.0834, 1) = "8.3%"', () => {
+        expect(convertToPercetage(0.0834, 1)).toBe("8.3%")
     })
 })
 

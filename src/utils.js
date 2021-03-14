@@ -51,12 +51,13 @@ const convertToMoney = (value, decimals = 1) => {
 
 /**
  * Returns a string with the amount of money using a suffix (k or M) 
- * if needed the value is in the order of thousands or millions
+ * if needed the value is in the order of thousands or millions.
+ * Example: convertToPercetage(0.88, 1) = "88%"
  * @param {float} value 
  * @param {integer} decimals 
  */
 const convertToPercetage = (value, decimals = 0) =>
-    roundToString(value, decimals) + '%'
+    roundToString(value * 100, decimals) + '%'
 
 
 // FUNCTIONS TO HANDLE RANDOM NUMBERS

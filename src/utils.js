@@ -226,10 +226,17 @@ const runAnalysis = (constant, random) => {
     )
 
     return {
+        scenario: {
+            initialInvestment: constant.initialInvestment,
+            monthlyDeposits: constant.monthlyDeposits,
+            monthlyWithdrawals: constant.monthlyWithdrawals,
+            yearlyWithdrawals: constant.monthlyWithdrawals * 12
+        },
         retirementStart: {
             year: constantSimulation.retirementStart.year,
             constant: constantSimulation.retirementStart.accumInvested,
             random: randomSimulation.retirementStart.accumInvested,
+            firstYearGains: plotData[constant.yearsToRetire].constant - plotData[constant.yearsToRetire-1].constant
         },
         lastYear: {
             year: thisYear + constant.lastYear,
@@ -252,7 +259,7 @@ const runAnalysis = (constant, random) => {
                     : acc, 0
             ) / lastYearCapital.length,
             lastYearGEdeposited: lastYearCapital.reduce((acc, y) =>
-                y >= constantSimulation.capital.deposited*20
+                y >= constantSimulation.capital.deposited
                     ? acc + 1
                     : acc, 0
             ) / lastYearCapital.length

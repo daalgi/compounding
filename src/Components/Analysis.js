@@ -1,5 +1,5 @@
 import { Subtitle } from './Common'
-import { convertToK, convertToPercetage } from '../utils'
+import { convertToMoney, convertToPercetage } from '../utils'
 
 
 const InfoCard = ({
@@ -7,7 +7,7 @@ const InfoCard = ({
     info = []
 }) =>
     <div className="results-card">
-        <Subtitle >{title}</Subtitle>
+        <Subtitle>{title}</Subtitle>
         {info.map((item, index) =>
             typeof item === "string"
                 ? <p key={index}>{item}</p>
@@ -16,33 +16,38 @@ const InfoCard = ({
     </div>
 
 const Analysis = ({ state }) => {
-    //console.log(state)
+    // console.log(state.lastYear.normalDistribution)
     return (
-        <div className="">
+        <div className="cards-container">
             <InfoCard
                 title="1000 random simulations"
                 info={[
-                    //`Mean: ${convertToK(state.lastYear.normalDistribution.mean)}`,
-                    //`Standard deviation: ${convertToK(state.lastYear.normalDistribution.standardDeviation)}`,
-                    `${convertToPercetage(state.probabilities.noBankrupcy)} of probability of still having money in ${state.lastYear.year}`,
+                    { variant: "subtitle1", text: `Your investment in ${state.lastYear.year}:` },
+                    // `- Mean: ${convertToMoney(state.lastYear.normalDistribution.mean)}`,
+                    // `- Standard deviation: ${convertToMoney(state.lastYear.normalDistribution.standardDeviation)}`,
+                    `- ${convertToPercetage(state.probabilities.noBankrupcy)} probability of still having money`,
+                    `- ${convertToPercetage(state.probabilities.lastYearGEdeposited)} probability of having at least ${convertToMoney(state.lastYear.deposited)} (your deposits)`
                 ]}
             />
             <InfoCard
                 title="Scenario Analysis"
                 info={[
-                    `Deposits: ${convertToK(state.lastYear.deposited)}`,
-                    `Withdrawals: ${convertToK(state.lastYear.withdrawn)}`,
+                    `Total deposits: ${convertToMoney(state.lastYear.deposited)}`,
+                    `Total withdrawals: ${convertToMoney(state.lastYear.withdrawn)}`,
+                    `Withdrawals in the first year of retirement (${state.retirementStart.year}): ${convertToMoney(state.scenario.yearlyWithdrawals)}`,
                     { variant: "subtitle1", text: "Constant returns hypothesis:" },
                     `- Retirement (${state.retirementStart.year}): 
-                    ${convertToK(state.retirementStart.constant)}`,
+                    ${convertToMoney(state.retirementStart.constant)}`,
+                    `- Gains during the first year in retirement: 
+                    ${convertToMoney(1e3 * state.retirementStart.firstYearGains)}`,
                     `- Last year (${state.lastYear.year}): 
-                    ${convertToK(state.lastYear.constant)}`,
+                    ${convertToMoney(state.lastYear.constant)}`,
                     state.yearBankrupcy.constant ? `- No money left in ${state.yearBankrupcy.constant}` : "",
                     { variant: "subtitle1", text: "One random simulation:" },
                     `- Retirement (${state.retirementStart.year}): 
-                    ${convertToK(state.retirementStart.random)}`,
+                    ${convertToMoney(state.retirementStart.random)}`,
                     `- Last year (${state.lastYear.year}): 
-                    ${convertToK(state.lastYear.random)}`,
+                    ${convertToMoney(state.lastYear.random)}`,
                     state.yearBankrupcy.random ? `- No money left in ${state.yearBankrupcy.random}` : "",
                 ]}
 

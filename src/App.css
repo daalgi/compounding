@@ -2,8 +2,10 @@
   text-align: center;
 }
 .page {
-  /* display: grid; */
   max-width: 1600px;
+  display: grid;
+  grid-gap: 5px;  
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
   /* display: flex; */
   /* direction: row; */
   /* flex-wrap: wrap; */
@@ -69,6 +71,13 @@
 .chart {
   height: 320px;
   max-width: 640px;
+}
+.tooltip {
+  background-color: hsl(220, 13%, 23%);
+  color: white;
+  padding: 1px 8px 1px 8px;
+  box-shadow: 1px 1px 0px 0px hsl(220, 13%, 11%);
+  font-size: small;
 }
 
 @media (min-width: 640px) {

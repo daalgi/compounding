@@ -49,10 +49,17 @@ function App() {
 
                 <Form setState={setState} />
                 <Analysis state={state} />
-                <Chart data={state.plotData} />
+                <Chart
+                    data={state.plotData}
+                    years={({ 
+                        this: new Date().getFullYear(),
+                        retirement: state.retirementStart.year,
+                        last: state.lastYear.year
+                    })}
+                />
 
             </div>
-            
+
         </div>
     )
 }

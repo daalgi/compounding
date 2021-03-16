@@ -3,8 +3,20 @@ import { ResponsiveLine } from '@nivo/line'
 import { convertToMoney } from '../utils'
 
 
-const Chart = ({ data }) => {
-    console.log(data)
+const Tooltip = ({ index, data }) => {
+    index %= data.length
+    return(
+        <div className="tooltip">
+            <p>Year {data[index].year}</p>
+            <p>Constant returns: {convertToMoney(1e3 * data[index].constant)}</p>
+            <p>Random returns: {convertToMoney(1e3 * data[index].random)}</p>
+        </div>
+    )
+}
+
+
+const Chart = ({ data, years }) => {
+    // console.log(data)
     return (
         <div className="chart">
             <ResponsiveLine
@@ -17,35 +29,26 @@ const Chart = ({ data }) => {
                         data: data.map(item => ({ x: item.year, y: item.random }))
                     },
                 ]}
-                margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
+                margin={{ top: 50, right: 110, bottom: 50, left: 80 }}
                 xScale={{ type: 'point' }}
                 yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
                 yFormat=" >-.2f"
+                tooltip={({ point }) => <Tooltip index={point.index} data={data} />}
                 axisTop={null}
                 axisRight={null}
                 axisBottom={{
-                    // orient: 'bottom',
-                    // tickSize: 5,
-                    // tickPadding: 5,
-                    // tickRotation: 0,
-                    // ticks: 5,
-                    // tickValues={[2021, 2030, 2050, 2080]}
-                    legend: 'transportation',
-                    legendOffset: 36,
+                    tickValues: [years.this, years.retirement, years.last],
+                    legend: 'year',
+                    legendOffset: 32,
                     legendPosition: 'middle'
                 }}
-                // axisLeft={{
-                //     orient: 'left',
-                //     // tickSize: 5,
-                //     // tickPadding: 5,
-                //     // tickRotation: 0,
-                //     // tickValues={[]}
-                //     // legend: 'count',
-                //     legendOffset: -40,
-                //     legendPosition: 'middle',
-                //     color: "white"
-                // }}
-                // colors={{ scheme: 'nivo' }}
+                axisLeft={{
+                    orient: 'left',
+                    legend: 'Money [k]',
+                    legendOffset: -52,
+                    legendPosition: 'middle',
+                    color: "white"
+                }}
                 theme={{
                     //['grid', 'markers', 'axes', 'areas', 'crosshair', 'lines', 'points', 'slices', 'mesh', 'legends'
                     background: "hsl(220, 13%, 18%)",
@@ -67,7 +70,7 @@ const Chart = ({ data }) => {
                     },
                     grid: {
                         line: {
-                            stroke: "hsl(220, 13%, 20%)",
+                            stroke: "hsl(220, 13%, 23%)",
                             strokeWidth: 1
                         }
                     },
@@ -75,17 +78,19 @@ const Chart = ({ data }) => {
                         line: {
                             stroke: "hsl(220, 13%, 80%)"
                         }
+                    },
+                    tooltip: {
+                        container: {
+                            background: "hsl(220, 13%, 23%)",
+                            color: "white"
+                        }
                     }
                 }}
                 pointSize={0}
-                pointColor={{ theme: 'background' }}
-                pointBorderWidth={2}
-                pointBorderColor={{ from: 'serieColor' }}
-                pointLabelYOffset={-12}
                 useMesh={true}
                 legends={[
                     {
-                        anchor: 'bottom-right',
+                        anchor: 'top-center',
                         direction: 'column',
                         justify: false,
                         translateX: 100,

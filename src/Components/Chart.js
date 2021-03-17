@@ -3,6 +3,15 @@ import { ResponsiveLine } from '@nivo/line'
 import { convertToMoney } from '../utils'
 
 
+/*
+TODO check when @nivo and react-spring fix the issue with the tooltip
+
+https://github.com/plouc/nivo/issues/1290
+"We switched to react-spring v9 and it is an issue there. 
+We won't be able to fix it until they release a new version. 
+There are some workarounds you can try in your project. pmndrs/react-spring#1078"
+*/
+
 const Tooltip = ({ index, data }) => {
     index %= data.length
     return(
@@ -29,7 +38,7 @@ const Chart = ({ data, years }) => {
                         data: data.map(item => ({ x: item.year, y: item.random }))
                     },
                 ]}
-                margin={{ top: 50, right: 110, bottom: 50, left: 80 }}
+                margin={{ top: 32, right: 32, bottom: 64, left: 40 }}
                 xScale={{ type: 'point' }}
                 yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
                 yFormat=" >-.2f"
@@ -39,13 +48,13 @@ const Chart = ({ data, years }) => {
                 axisBottom={{
                     tickValues: [years.this, years.retirement, years.last],
                     legend: 'year',
-                    legendOffset: 32,
+                    legendOffset: 30,
                     legendPosition: 'middle'
                 }}
                 axisLeft={{
                     orient: 'left',
-                    legend: 'Money [k]',
-                    legendOffset: -52,
+                    // legend: 'Money [k]',
+                    // legendOffset: -48,
                     legendPosition: 'middle',
                     color: "white"
                 }}
@@ -90,8 +99,8 @@ const Chart = ({ data, years }) => {
                 useMesh={true}
                 legends={[
                     {
-                        anchor: 'top-center',
-                        direction: 'column',
+                        anchor: 'top-left',
+                        direction: 'row',
                         justify: false,
                         translateX: 100,
                         translateY: 0,

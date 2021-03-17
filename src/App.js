@@ -6,7 +6,7 @@ import Form from './Components/Form'
 // import Chart from './Components/Chart'
 import Analysis from './Components/Analysis'
 import Chart from './Components/Chart'
-import Help from './Components/Help'
+// import Help from './Components/Help'
 
 
 const defaultState = {
@@ -45,7 +45,7 @@ function App() {
             <h1 className="title">Investment compounding</h1>
             {/* <Help /> */}
 
-            <div className="">
+            <div className="page">
 
                 <Form setState={setState} />
                 <Analysis state={state} />

@@ -46,17 +46,16 @@ const RETURNS_INPUTS = [
         label: value => `Standard deviation: ${value}%`,
         name: "roiStsdv",
         min: 0, max: 50, step: 1,
-        marks: [0, 100e3, 200e3, 300e3, 400e3, 500e3],
         marks: [0, 10, 20, 30, 40, 50]
     }
 ]
 
 const defaultValues = {
-    initialInvestment: 200000,
-    monthlyDeposits: 1500,
+    initialInvestment: 5000,
+    monthlyDeposits: 500,
     yearsToRetire: 20,
-    monthlyWithdrawals: 1700,
-    yearsInRetirement: 60,
+    monthlyWithdrawals: 1200,
+    yearsInRetirement: 40,
     roiMean: 7,
     roiStsdv: 19
 }
@@ -84,10 +83,10 @@ const Form = ({ setState }) => {
     const handleCalculations = () => {
         let random = { ...input, roiMean: input.roiMean / 100, roiStsdv: input.roiStsdv / 100 }
         let res = runAnalysis({ ...random, roiStsdv: 0}, random)
-        console.log(res)
+        // console.log(res)
         setState(res)
     }
-    console.log('render FORM')
+    // console.log('render FORM')
     return (
         <form onSubmit={handleSubmit}
             className="input-form">
@@ -123,7 +122,6 @@ const Form = ({ setState }) => {
                     suffix={suffix}
                 />
             )}
-            <br />
             <button type="submit" name="btn" className="btn">
                 Run simulation
             </button>

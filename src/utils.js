@@ -175,7 +175,7 @@ const evalScenario = scenario => {
             }
         })
 
-        if (!yearBankrupcy && accumInvested == 0)
+        if (!yearBankrupcy && accumInvested === 0)
             yearBankrupcy = year
 
         annualRes.push(y)
